@@ -37,13 +37,9 @@ export default function App() {
           <div className="text-[#4a4a4a]" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.7' }}>
             <p className="mb-2">A container for experiments:</p>
             <ul className="space-y-0.5 ml-4">
-              <li>
-                <Link to="/telltale" className="text-[#E95BEB] hover:text-[#F10041] transition-colors">
-                  — Telltale
-                </Link>
-              </li>
+              <li style={{ color: '#aaa' }}>— some serious</li>
               <li style={{ color: '#aaa' }}>— some playful</li>
-              <li style={{ color: '#aaa' }}>— some half-formed</li>
+              <li style={{ color: '#aaa' }}>— some still half-baked</li>
             </ul>
             <p className="mt-3">A place to put my thoughts and learnings</p>
           </div>
