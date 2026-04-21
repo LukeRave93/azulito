@@ -38,7 +38,7 @@ export default function Telltale() {
           Telltale
         </h1>
         <p style={{ color: '#888', fontSize: '15px', marginBottom: '40px', fontStyle: 'italic' }}>
-          and what we've learned so far
+          and what i've learned so far
         </p>
 
         {/* Body */}
@@ -46,7 +46,7 @@ export default function Telltale() {
 
           <p>My north star is to be the best in the world at helping brands understand their customers on an intimate level. Better understanding leads to better experiences and sharper decisions.</p>
 
-          <p>Telltale is early. We're live, we have paying clients, and the learnings are starting to stack up. A few worth sharing here.</p>
+          <p>Telltale is early. It's live, we have clients, and the learnings are starting to stack up. A few worth sharing here.</p>
 
           <h2 style={{ fontSize: '17px', fontWeight: 'normal', marginTop: '12px', marginBottom: '0', color: '#03AAE8' }}>
             It started with a post-purchase attribution survey
