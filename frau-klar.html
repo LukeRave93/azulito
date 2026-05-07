@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frau Klar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: #faf9f6;
+      color: #1a1a1a;
+      font-family: 'EB Garamond', serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Blob */
+    .blob {
+      position: fixed;
+      top: -60px;
+      left: -40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Back link */
+    .back {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      color: #888;
+      text-decoration: none;
+      font-size: 14px;
+      z-index: 10;
+      font-family: 'EB Garamond', serif;
+    }
+
+    /* Big title */
+    .title {
+      position: fixed;
+      top: 12%;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .title h1 {
+      font-family: 'Pirata One', cursive;
+      font-size: clamp(3rem, 13vw, 11rem);
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: 0.05em;
+      color: #03AAE8;
+      white-space: nowrap;
+    }
+
+    /* Main wrap */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      margin-top: clamp(180px, 28vw, 300px);
+      padding: 0 1.5rem 4rem;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    /* States */
+    .state { display: none; flex-direction: column; align-items: center; gap: 1.5rem; width: 100%; }
+    .state.active { display: flex; animation: rise 0.5s ease forwards; opacity: 0; }
+
+    /* Buttons */
+    .btn-primary {
+      background: #03AAE8;
+      color: #faf9f6;
+      border: none;
+      border-radius: 100px;
+      padding: 0.85rem 2.4rem;
+      font-family: 'EB Garamond', serif;
+      font-size: 16px;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.15s ease;
+    }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid #88888855;
+      border-radius: 100px;
+      padding: 0.6rem 1.5rem;
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      color: #888;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+    .btn-ghost:hover { border-color: #888; color: #333; }
+    .btn-ghost.danger:hover { border-color: #E95BEB; color: #E95BEB; }
+
+    .controls { display: flex; gap: 0.75rem; }
+
+    /* Sub text */
+    .subtext { font-size: 15px; color: #888; line-height: 1.7; max-width: 260px; }
+
+    /* Status label */
+    .status-label {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #03AAE8;
+      transition: color 0.3s ease;
+    }
+    .status-label.speaking { color: #1a1a1a; }
+
+    /* Timer text */
+    .timer-text {
+      font-family: 'Pirata One', cursive;
+      font-size: 30px;
+      color: #4a4a4a;
+      letter-spacing: 0.05em;
+      transition: color 0.3s ease;
+    }
+    .timer-text.urgent { color: #E95BEB; }
+
+    /* Mic orb */
+    .mic-wrap {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ring {
+      position: absolute;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: #03AAE8;
+      opacity: 0;
+    }
+    .ring-1 { animation: ripple 2.2s ease-out 0s infinite; }
+    .ring-2 { animation: ripple 2.2s ease-out 0.7s infinite; }
+    .ring-3 { animation: ripple 2.2s ease-out 1.4s infinite; }
+    .mic-wrap.speaking .ring { background: #1a1a1a; }
+    .mic-wrap.inactive .ring { display: none; }
+
+    .mic-btn {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: #d0cdc8;
+      border: none;
+      cursor: default;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+      transition: background 0.3s ease;
+    }
+    .mic-btn.active { background: #03AAE8; }
+    .mic-btn.speaking { background: #1a1a1a; }
+
+    /* Countdown ring */
+    .countdown-wrap {
+      position: relative;
+      width: 120px; height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .countdown-svg {
+      position: absolute;
+      top: 0; left: 0;
+      transform: rotate(-90deg);
+    }
+    #progress-ring {
+      transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+    }
+
+    /* Transcript */
+    .transcript {
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      scroll-behavior: smooth;
+      text-align: left;
+    }
+    .transcript::-webkit-scrollbar { width: 3px; }
+    .transcript::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+    .t-line {
+      padding-left: 0.6rem;
+      border-left: 2px solid #ccc;
+      animation: rise 0.3s ease forwards;
+      opacity: 0;
+    }
+    .t-line.agent { border-left-color: #03AAE8; }
+
+    .t-speaker {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 2px;
+    }
+    .t-line.agent .t-speaker { color: #03AAE8; }
+
+    .t-text {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .t-line.agent .t-text { color: #1a1a1a; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes ripple {
+      0%   { transform: scale(1);   opacity: 0.25; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Blob -->
+  <div class="blob">
+    <svg width="320" height="280" viewBox="0 0 280 240" fill="none">
+      <path d="M120 40C150 25 180 30 200 50C220 70 225 100 215 130C205 160 185 180 155 185C125 190 95 175 75 150C55 125 50 90 65 65C80 40 90 55 120 40Z" fill="#03AAE8" opacity="0.10"/>
+    </svg>
+  </div>
+
+  <!-- Back -->
+  <a class="back" href="/">← azulito</a>
+
+  <!-- Title -->
+  <div class="title" id="title">
+    <h1>FRAU KLAR</h1>
+  </div>
+
+  <!-- Content -->
+  <div class="wrap">
+
+    <!-- IDLE -->
+    <div class="state active" id="state-idle">
+      <p class="subtext">A 10-minute voice conversation.<br>Press start when you're ready.</p>
+      <button class="btn-primary" id="btn-start">Start conversation</button>
+    </div>
+
+    <!-- CONNECTING -->
+    <div class="state" id="state-connecting">
+      <div class="mic-wrap inactive">
+        <div class="mic-btn">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23" stroke-linecap="round"/>
+            <line x1="8" y1="23" x2="16" y2="23" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <p class="status-label">Connecting…</p>
+    </div>
+
+    <!-- ACTIVE -->
+    <div class="state" id="state-active">
+      <div class="countdown-wrap">
+        <svg class="countdown-svg" width="120" height="120">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#e8e4df" stroke-width="4"/>
+          <circle id="progress-ring" cx="60" cy="60" r="52" fill="none" stroke="#03AAE8" stroke-width="4"
+            stroke-dasharray="326.7" stroke-dashoffset="0" stroke-linecap="round"/>
+        </svg>
+        <div class="mic-wrap" id="mic-wrap">
+          <div class="ring ring-1"></div>
+          <div class="ring ring-2"></div>
+          <div class="ring ring-3"></div>
+          <div class="mic-btn active" id="mic-btn">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23" stroke-linecap="round"/>
+              <line x1="8" y1="23" x2="16" y2="23" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="status-label" id="status-label">Listening</p>
+        <p class="timer-text" id="timer-text">10:00</p>
+      </div>
+
+      <div class="transcript" id="transcript"></div>
+
+      <div class="controls">
+        <button class="btn-ghost" id="btn-mute">Mute</button>
+        <button class="btn-ghost danger" id="btn-end">End</button>
+      </div>
+    </div>
+
+    <!-- ENDED -->
+    <div class="state" id="state-ended">
+      <p class="subtext">Conversation ended.</p>
+      <div class="transcript" id="transcript-ended"></div>
+      <button class="btn-ghost" id="btn-restart">Start again</button>
+    </div>
+
+  </div>
+
+<script type="module">
+  import { Conversation } from 'https://cdn.jsdelivr.net/npm/@11labs/client@latest/+esm';
+
+  const AGENT_ID = 'agent_0801kqtw8cy2eh88h65zedwyfw5q';
+  const CIRCUM   = 2 * Math.PI * 52; // 326.7
+
+  let conversation   = null;
+  let isMuted        = false;
+  let secondsLeft    = 600;
+  let countdownTimer = null;
+  let fullTranscript = [];
+
+  const $ = id => document.getElementById(id);
+
+  function show(name) {
+    ['idle','connecting','active','ended'].forEach(n => {
+      $('state-' + n).classList.remove('active');
+    });
+    $('state-' + name).classList.add('active');
+    // Fade title when active
+    $('title').style.opacity = name === 'active' ? '0.12' : '0.18';
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = String(s % 60).padStart(2,'0');
+    return `${m}:${sec}`;
+  }
+
+  function updateRing() {
+    const pct = secondsLeft / 600;
+    const offset = CIRCUM * (1 - pct);
+    $('progress-ring').style.strokeDashoffset = offset;
+    const urgent = secondsLeft <= 60;
+    $('progress-ring').style.stroke = urgent ? '#E95BEB' : '#03AAE8';
+    $('timer-text').textContent = formatTime(secondsLeft);
+    $('timer-text').classList.toggle('urgent', urgent);
+  }
+
+  function startCountdown() {
+    secondsLeft = 600;
+    updateRing();
+    countdownTimer = setInterval(() => {
+      secondsLeft--;
+      updateRing();
+      if (secondsLeft <= 0) { clearInterval(countdownTimer); endConversation(); }
+    }, 1000);
+  }
+
+  function stopCountdown() {
+    clearInterval(countdownTimer);
+  }
+
+  function addTranscriptLine(role, text, containerId) {
+    const wrap = $(containerId);
+    const line = document.createElement('div');
+    line.className = 't-line' + (role === 'agent' ? ' agent' : '');
+    line.innerHTML = `<div class="t-speaker">${role === 'agent' ? 'Frau Klar' : 'You'}</div><div class="t-text">${text}</div>`;
+    wrap.appendChild(line);
+    wrap.scrollTop = wrap.scrollHeight;
+    fullTranscript.push({ role, text });
+  }
+
+  async function endConversation() {
+    stopCountdown();
+    if (conversation) { await conversation.endSession(); conversation = null; }
+    // Copy transcript to ended panel
+    const ended = $('transcript-ended');
+    ended.innerHTML = '';
+    fullTranscript.forEach(t => {
+      const line = document.createElement('div');
+      line.className = 't-line' + (t.role === 'agent' ? ' agent' : '');
+      line.innerHTML = `<div class="t-speaker">${t.role === 'agent' ? 'Frau Klar' : 'You'}</div><div class="t-text">${t.text}</div>`;
+      ended.appendChild(line);
+    });
+    show('ended');
+  }
+
+  // Start
+  $('btn-start').addEventListener('click', async () => {
+    show('connecting');
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      conversation = await Conversation.startSession({
+        agentId: AGENT_ID,
+        onConnect: () => { show('active'); startCountdown(); },
+        onMessage: ({ source, message }) => {
+          addTranscriptLine(source === 'ai' ? 'agent' : 'user', message, 'transcript');
+        },
+        onModeChange: ({ mode }) => {
+          const speaking = mode === 'speaking';
+          $('mic-wrap').className   = 'mic-wrap' + (speaking ? ' speaking' : '');
+          $('mic-btn').className    = 'mic-btn active' + (speaking ? ' speaking' : '');
+          $('status-label').className = 'status-label' + (speaking ? ' speaking' : '');
+          $('status-label').textContent = speaking ? 'Frau Klar is speaking…' : (isMuted ? 'Muted' : 'Listening');
+        },
+        onDisconnect: () => endConversation(),
+        onError: (e) => { console.error(e); show('idle'); },
+      });
+    } catch (err) {
+      console.error(err);
+      show('idle');
+    }
+  });
+
+  // Mute
+  $('btn-mute').addEventListener('click', () => {
+    if (!conversation) return;
+    isMuted = !isMuted;
+    conversation.setMicMuted(isMuted);
+    $('btn-mute').textContent = isMuted ? 'Unmute' : 'Mute';
+    if (!$('status-label').classList.contains('speaking')) {
+      $('status-label').textContent = isMuted ? 'Muted' : 'Listening';
+    }
+  });
+
+  // End
+  $('btn-end').addEventListener('click', () => endConversation());
+
+  // Restart
+  $('btn-restart').addEventListener('click', () => {
+    fullTranscript = [];
+    isMuted = false;
+    $('transcript').innerHTML = '';
+    $('btn-mute').textContent = 'Mute';
+    show('idle');
+  });
+</script>
+
+</body>
+</html>
